@@ -75,7 +75,7 @@ int main() {
 
     else if (choise == 2){
       std::cout << "\nUpdate account!\n";
-      std::cout << "Please enter your login and password for updateing account!...\n";
+      std::cout << "Please enter your login, password and ID - for updateing account!...\n";
 
       std::string login, password, id;
       
@@ -95,7 +95,7 @@ int main() {
     else if (choise == 4){
 
       std::cout << "\nChecking account details!\n";
-      std::cout << "Please enter your login and password!...\n";
+      std::cout << "Please enter your login, password and ID!...\n";
 
       std::string login, password, id;
       
@@ -113,7 +113,7 @@ int main() {
 
     else if (choise == 5){
       std::cout << "\nDelete account!\n";
-      std::cout << "Please enter your login and password for deleting account!...\n";
+      std::cout << "Please enter your login, password and ID - for deleting account!...\n";
 
       std::string login, password, id;
       
