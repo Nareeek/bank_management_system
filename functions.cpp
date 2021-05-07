@@ -55,7 +55,6 @@ void print(std::string& name, std::string& surname, std::string &id, std::string
 }
 
 void adding_new_json_object(Customer& customer, json& Accounts){
-  std::cout << "+";
 
     for (const auto& item : Accounts.items())
     {
@@ -92,7 +91,11 @@ void adding_new_json_object(Customer& customer, json& Accounts){
 void update(json& Accounts, std::string& login, std::string& password){
     bool flag1 = false;
     bool flag2 = false;
-    std::string banking_account_flag;
+    bool is_changed = false;
+    json banking_account_flag;
+
+    std::string n, sn, id, l, p;
+
 
     for (const auto& item : Accounts.items())
     {
@@ -101,19 +104,23 @@ void update(json& Accounts, std::string& login, std::string& password){
           if(val.key() == "Login"){
             if(val.value() == login){
               flag1 = true;
+            } else{
+                break;
             }
           }
 
           if(val.key() == "Password"){
             if(val.value() == password){
               flag2 = true;
+            } else{
+                break;
             }
           }
         }
           
         if(flag1 && flag2){
-          std::string n, sn, id, l, p;
           banking_account_flag = item.value();
+          is_changed = true;
 
           std::cout << "\nName:";
           std::cin >> n;
@@ -130,32 +137,60 @@ void update(json& Accounts, std::string& login, std::string& password){
           std::cout << "Password:";
           std::cin >> p;
 
-          for (const auto& item : Accounts.items()){
-            if(item.value() == banking_account_flag){
-              for (const auto& val : item.value().items()){
-                  if(val.key() == "Name"){
-                    val.value() = n;
-                  }
-                  if(val.key() == "Surname"){
-                    val.value() = sn;
-                  }
-                  if(val.key() == "ID"){
-                    val.value() = id;
-                  }
-                  if(val.key() == "Login"){
-                    val.value() = l;
-                  }
-                  if(val.key() == "Password"){
-                    val.value() = p;
-                  }           
-                }
-            }
-          }
-          return;
+          break;
+
+        } else{
+           flag1 = false;
+           flag2 = false;
       }
-    } 
-    std::cout << std::endl;
-    std::cout << "Incorrect login or password\n";
+    }
+    
+    for (const auto& item : Accounts.items())
+    {
+        for (const auto& val : item.value().items())
+        {
+          if(val.key() == "ID"){
+            if(val.value() == id){
+              std::cout << "\n\n-------------\nThe ID-value is matching, wrong!\nAccount didn't updated!\n---------------\n\n";
+              return;
+            }
+          }   
+        }
+      }
+
+
+    if(is_changed){
+      for (const auto& item : Accounts.items()){
+        if(item.value() == banking_account_flag){
+          for (const auto& val : item.value().items()){
+
+              if(val.key() == "Name"){
+                Accounts[item.key()][val.key()] = n;
+              }
+
+              if(val.key() == "Surname"){
+                Accounts[item.key()][val.key()] = sn;
+              }
+
+              if(val.key() == "ID"){
+                Accounts[item.key()][val.key()] = id;
+              }
+
+              if(val.key() == "Login"){
+                Accounts[item.key()][val.key()] = l;
+              }
+
+              if(val.key() == "Password"){
+                Accounts[item.key()][val.key()] = p;
+              }           
+            }
+        }
+        std::cout << "\n\nThe account successfully updated!\n\n";
+      }
+    } else {
+        std::cout << std::endl;
+        std::cout << "Incorrect login or password\n";
+    }
 }
 
 

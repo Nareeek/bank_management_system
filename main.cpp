@@ -81,8 +81,9 @@ int main() {
 
       std::cout << "Password: ";
       std::cin >> password;
+      std::cout << std::endl;
 
-      // update(Accounts, login, password);
+      update(Accounts, login, password);
     }
 
     else if (choise == 4){
