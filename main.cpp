@@ -10,9 +10,12 @@ json temp;
 
 void adding_new_json_object(Customer& customer, json& Accounts);
 
-void update(json& Accounts, std::string& login, std::string& password);
+void update(json& Accounts, std::string& login, std::string& password, std::string& id);
 
-void print_account(json& Accounts, std::string& login, std::string& password);
+void deleting(json& Accounts, json& temp, std::string& login, std::string& password, std::string& id);
+
+
+void print_account(json& Accounts, std::string& login, std::string& password, std::string& id);
 
 void print_all_customers(json& Accounts);
 
@@ -74,16 +77,19 @@ int main() {
       std::cout << "\nUpdate account!\n";
       std::cout << "Please enter your login and password for updateing account!...\n";
 
-      std::string login, password;
+      std::string login, password, id;
       
       std::cout << "\nLogin: ";
       std::cin >> login;
 
       std::cout << "Password: ";
       std::cin >> password;
+
+      std::cout << "\nID: ";
+      std::cin >> id;
       std::cout << std::endl;
 
-      update(Accounts, login, password);
+      update(Accounts, login, password, id);
     }
 
     else if (choise == 4){
@@ -91,7 +97,7 @@ int main() {
       std::cout << "\nChecking account details!\n";
       std::cout << "Please enter your login and password!...\n";
 
-      std::string login, password;
+      std::string login, password, id;
       
       std::cout << "\nLogin: ";
       std::cin >> login;
@@ -99,7 +105,29 @@ int main() {
       std::cout << "Password: ";
       std::cin >> password;
 
-      print_account(Accounts, login, password);
+      std::cout << "\nID: ";
+      std::cin >> id;
+
+      print_account(Accounts, login, password, id);
+    }
+
+    else if (choise == 5){
+      std::cout << "\nDelete account!\n";
+      std::cout << "Please enter your login and password for deleting account!...\n";
+
+      std::string login, password, id;
+      
+      std::cout << "\nLogin: ";
+      std::cin >> login;
+
+      std::cout << "Password: ";
+      std::cin >> password;
+
+      std::cout << "\nID: ";
+      std::cin >> id;
+      std::cout << std::endl;
+
+      deleting(Accounts, temp, login, password, id);
     }
 
     else if (choise == 6){
@@ -131,6 +159,7 @@ int main() {
       if (tempfile.is_open()) {
         tempfile << std::setw(4) << temp << std::endl;
         tempfile.close();
+        // remove("accounts.json");
         }
       else {
         std::cout << "Unable to open file";

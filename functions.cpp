@@ -88,13 +88,14 @@ void adding_new_json_object(Customer& customer, json& Accounts){
 }
 
 
-void update(json& Accounts, std::string& login, std::string& password){
+void update(json& Accounts, std::string& login, std::string& password, std::string& id){
     bool flag1 = false;
     bool flag2 = false;
+    bool flag3 = false;
     bool is_changed = false;
     json banking_account_flag;
 
-    std::string n, sn, id, l, p;
+    std::string n, sn, _id, l, p;
 
 
     for (const auto& item : Accounts.items())
@@ -116,9 +117,17 @@ void update(json& Accounts, std::string& login, std::string& password){
                 break;
             }
           }
+
+        if(val.key() == "ID"){
+            if(val.value() == id){
+              flag3 = true;
+            } else{
+                break;
+            }
+          }
         }
           
-        if(flag1 && flag2){
+        if(flag1 && flag2 && flag3){
           banking_account_flag = item.value();
           is_changed = true;
 
@@ -129,7 +138,7 @@ void update(json& Accounts, std::string& login, std::string& password){
           std::cin >> sn;
 
           std::cout << "\nId:";
-          std::cin >> id;
+          std::cin >> _id;
 
           std::cout << "\nLogin:";
           std::cin >> l;
@@ -142,6 +151,7 @@ void update(json& Accounts, std::string& login, std::string& password){
         } else{
            flag1 = false;
            flag2 = false;
+           flag3 = false;
       }
     }
     
@@ -150,7 +160,7 @@ void update(json& Accounts, std::string& login, std::string& password){
         for (const auto& val : item.value().items())
         {
           if(val.key() == "ID"){
-            if(val.value() == id){
+            if(val.value() == _id){
               std::cout << "\n\n-------------\nThe ID-value is matching, wrong!\nAccount didn't updated!\n---------------\n\n";
               return;
             }
@@ -173,7 +183,7 @@ void update(json& Accounts, std::string& login, std::string& password){
               }
 
               if(val.key() == "ID"){
-                Accounts[item.key()][val.key()] = id;
+                Accounts[item.key()][val.key()] = _id;
               }
 
               if(val.key() == "Login"){
@@ -184,8 +194,21 @@ void update(json& Accounts, std::string& login, std::string& password){
                 Accounts[item.key()][val.key()] = p;
               }           
             }
+              std::fstream myfile;
+              myfile.open("accounts.json", std::ios::out);
+
+              if (myfile.is_open()) {
+                myfile << std::setw(4) << Accounts << std::endl;
+                myfile.close();
+                }
+              else {
+                std::cout << "Unable to open file";
+                }
+
+              std::cout << "\n\nThe account successfully updated!\n\n";
+
+              break;
         }
-        std::cout << "\n\nThe account successfully updated!\n\n";
       }
     } else {
         std::cout << std::endl;
@@ -194,9 +217,10 @@ void update(json& Accounts, std::string& login, std::string& password){
 }
 
 
-void print_account(json& Accounts, std::string& login, std::string& password){
+void print_account(json& Accounts, std::string& login, std::string& password, std::string& id){
     bool flag1 = false;
     bool flag2 = false;
+    bool flag3 = false;
     std::string banking_account_flag;
 
     for (const auto& item : Accounts.items())
@@ -220,9 +244,18 @@ void print_account(json& Accounts, std::string& login, std::string& password){
               break;
             }
           }
+
+          if(val.key() == "ID"){
+            if(val.value() == id){
+              flag3 = true;
+            }
+            else{
+              break;
+            }
+          }
         }
           
-        if(flag1 && flag2){
+        if(flag1 && flag2 && flag3){
           std::cout << "\n\n-------\n";
           for (const auto& val : item.value().items()){
             if(val.key() == "Name"){
@@ -252,6 +285,7 @@ void print_account(json& Accounts, std::string& login, std::string& password){
         else {
           flag1 = false;
           flag2 = false;
+          flag3 = false;
         }
     }
     std::cout << std::endl;
@@ -329,4 +363,87 @@ std::string CUSTOMERS(json& Accounts){
         
     }
     return output;
+}
+
+
+void deleting(json& Accounts, json& temp,std::string& login, std::string& password, std::string& id){
+    bool flag1 = false;
+    bool flag2 = false;
+    bool flag3 = false;
+    bool is_changed = false;
+    json banking_account_flag;
+
+
+    for (const auto& item : Accounts.items())
+    {
+        for (const auto& val : item.value().items())
+        {
+          if(val.key() == "Login"){
+            if(val.value() == login){
+              flag1 = true;
+            } else{
+                break;
+            }
+          }
+
+          if(val.key() == "Password"){
+            if(val.value() == password){
+              flag2 = true;
+            } else{
+                break;
+            }
+          }
+
+          if(val.key() == "ID"){
+            if(val.value() == id){
+              flag2 = true;
+            } else{
+                break;
+            }
+          }
+        }
+          
+        if(flag1 && flag2 && flag3){
+          banking_account_flag = item.value();
+          is_changed = true;
+
+          break;
+
+        } else{
+           flag1 = false;
+           flag2 = false;
+           flag3 = false;
+      }
+    }
+
+
+    if(is_changed){
+      for (const auto& item : Accounts.items()){
+        if(item.value() == banking_account_flag){
+
+            Accounts.erase(item.key());
+            std::cout << "\n\nThe account successfully deleted!\n\n";
+
+
+            std::fstream myfile;
+            myfile.open("accounts.json", std::ios::out);
+
+            if (myfile.is_open()) {
+              myfile << std::setw(4) << Accounts << std::endl;
+              myfile.close();
+              }
+            else {
+              std::cout << "Unable to open file";
+              }
+
+            std::cout << "\n\nThe account successfully deleted!\n\n";
+
+            return;
+        }
+      }
+    } else {
+        std::cout << std::endl;
+        std::cout << "Incorrect login or password\n";
+    }
+
 }
