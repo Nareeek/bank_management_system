@@ -2,6 +2,9 @@
 #include "customer.h"
 #include "functions.h"
 
+json Accounts;
+json temp;
+json account_flag;
 
 
 int main() {
@@ -50,10 +53,10 @@ int main() {
       std::cout << "Please enter your login, password and ID - for updating account!...\n";
       std::string login, password, id;
 
-      bool is_valid_user = input_sign_in_credentials(login, password, id, account_flag);
+      bool is_valid_user = input_sign_in_credentials(login, password, id, account_flag, Accounts);
 
       if(is_valid_user){
-        update(account_flag);
+        update(account_flag, Accounts);
       } else{
         std::cout << "\n\n----------\nIncorrect login, password or id\n----------\n\n";
       }
@@ -65,7 +68,7 @@ int main() {
       std::cout << "Please enter your login, password and ID - for transaction!...\n";
       std::string login, password, id;
 
-      bool is_valid_user = input_sign_in_credentials(login, password, id, account_flag);
+      bool is_valid_user = input_sign_in_credentials(login, password, id, account_flag, Accounts);
 
       if(is_valid_user){
         std::cout << "\n\n-----\nChoose transaction number\n-----\n\n1.Transfer from your account!.\n2.Top up the balance in cash\n-----\n\n";
@@ -75,9 +78,9 @@ int main() {
         std::cout << "\n\n----------\nNew transaction!\n----------\n\n";
           
         if(direction == 1){
-          transfer(account_flag);
+          transfer(account_flag, Accounts);
         } else if(direction == 2){
-          top_up_balance(account_flag);
+          top_up_balance(account_flag, Accounts);
         }
       } else{
         std::cout << "\n\n----------\nIncorrect login, password or id\n----------\n\n";
@@ -90,10 +93,10 @@ int main() {
       std::cout << "Please enter your login, password and ID!...\n";
       std::string login, password, id;
       
-      bool is_valid_user = input_sign_in_credentials(login, password, id, account_flag);
+      bool is_valid_user = input_sign_in_credentials(login, password, id, account_flag, Accounts);
 
       if(is_valid_user){
-        print(account_flag);
+        print(account_flag, Accounts);
       } else{
         std::cout << "\n\n----------\nIncorrect login, password or id\n----------\n\n";
       }
@@ -105,10 +108,10 @@ int main() {
       std::cout << "Please enter your login, password and ID - for deleting account!...\n";
       std::string login, password, id;
 
-      bool is_valid_user = input_sign_in_credentials(login, password, id, account_flag);
+      bool is_valid_user = input_sign_in_credentials(login, password, id, account_flag, Accounts);
 
       if(is_valid_user){
-        deleting(account_flag);
+        deleting(account_flag, Accounts);
       } else{
         std::cout << "\n\n----------\nIncorrect login, password or id\n----------\n\n";
       }
@@ -118,10 +121,10 @@ int main() {
     else if (choise == 6){
       std::cout << "\n\n-----\nPrinting all Customers information!\n-----\n\n";
 
-      print_all_customers();
+      print_all_customers(Accounts);
 
       // add all customers list in -> customers_list.txt
-      std::string customers_list = CUSTOMERS();
+      std::string customers_list = CUSTOMERS(Accounts);
       std::ofstream customers_list_file("customers_list.txt");
 
       if (customers_list_file.is_open()) {

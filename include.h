@@ -11,7 +11,7 @@
 using json = nlohmann::json;
 
 // TODO multiple definitions...
-json Accounts;
-json temp;
-json account_flag;
+// json Accounts;
+// json temp;
+// json account_flag;
 

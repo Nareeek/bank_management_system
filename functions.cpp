@@ -5,7 +5,6 @@
 
 
 
-
 void welcome(){
   std::cout << "\nCUSTOMER ACCOUNT BANKING MANAGEMENT SYSTEM\n\n---- WELCOME TO THE MAIN MANU ----\n\n1. Create new account\n2. Update information of existing account\n3. For transactions\n4. Check the details of existing account\n5. Removing the existing account\n6. View customer's list\n7. Exit\n\n\nEnter your choice: ";
 }
@@ -22,6 +21,8 @@ int choose(){
 int input_number(std::string number, int a, int b){
   a += 48;
   b += 48;
+  std::cin >> number;
+
   while(number.length() != 1 || (!(std::isdigit(number[0]))) || (!(number[0] >= 49 && number[0] <= 55))){
     std::cin.clear();
     std::cout << "\ntry again!" << std::endl;
@@ -107,7 +108,7 @@ void add_content_to_file(std::string filename, json& Accounts){
       }
 }
 
-bool input_sign_in_credentials(std::string& login, std::string& password, std::string& id, json& account_flag){
+bool input_sign_in_credentials(std::string& login, std::string& password, std::string& id, json& account_flag, json& Accounts){
     std::cout << "\nLogin: ";
     std::cin >> login;
 
@@ -191,7 +192,7 @@ void input_update_credentials(int choise, std::string& new_name, std::string& ne
 }
 
 
-void update(json& account_flag){
+void update(json& account_flag, json& Accounts){
   std::string new_name="", new_surname="", new_id="", new_login="", new_password="";
 
 
@@ -204,6 +205,7 @@ void update(json& account_flag){
   while(choise != 6){
     input_update_credentials(choise, new_name, new_surname, new_id, new_login, new_password);
     std::cout << "\n\n-----\nWhat else?\n-----\n";
+    choise = input_number(number, 1, 6);
   }
   
 
@@ -242,8 +244,9 @@ void update(json& account_flag){
 }
 
 
-void print(json& account_flag){
-  
+void print(json& account_flag, json& Accounts){
+
+  std::cout << "\n\n----------\n\n";
   for (const auto& item : Accounts.items()){
     if(item.value() == account_flag){
       for (const auto& val : item.value().items()){
@@ -251,19 +254,24 @@ void print(json& account_flag){
       }
     }
   }
+  std::cout << "\n\n\n----------\n\n\n";
 }
 
 
-void print_all_customers(){
+void print_all_customers(json& Accounts){
   for (const auto& item : Accounts.items()){
       for (const auto& val : item.value().items()){
-        std::cout << val.key() << ": " << val.value() << std::endl;
+        if(val.key() != "Balance" && val.key() != "ID"){
+          if(val.key() != "Login" && val.key() != "Password"){
+            std::cout << val.key() << ": " << val.value() << std::endl;
+          }
+        }
       }
-      std::cout << "\n\n-----\n" << item.key() << "\n-----\n\n";
+      std::cout << "\n\n\n\n----------\n\n\n\n";
     }
 }
 
-std::string CUSTOMERS(){
+std::string CUSTOMERS(json& Accounts){
   std::string output, o1, o2, o3;
 
   for (const auto& item : Accounts.items()){
@@ -293,7 +301,7 @@ std::string CUSTOMERS(){
 }
 
 
-void deleting(json& account_flag){
+void deleting(json& account_flag, json& Accounts){
 
     for (const auto& item : Accounts.items()){
       if(item.value() == account_flag){
@@ -307,7 +315,7 @@ void deleting(json& account_flag){
 }
 
 
-bool is_valid_recipient(long long bank_account){
+bool is_valid_recipient(long long bank_account, json& Accounts){
   
   for (const auto& item : Accounts.items()){
         for (const auto& val : item.value().items()){
@@ -332,17 +340,22 @@ bool check_money_type(std::string money_str){
 }
 
 
-void transfer(json& account_flag){
+void transfer(json& account_flag, json& Accounts){
 
-  std::cout << "\n\n----------\nEnter recipient bank account (number)!\n----------\n\n";
+  std::cout << "\nEnter recipient bank account (number)!\n----------\n\n";
 
   std::cout << "\nBank account: ";
   long long bank_account;
   std::cin >> bank_account;
+
+  if (std::cin.fail()) {
+    std::cin.clear();
+    return;
+}
   
   long int money = 0;
 
-  if(!(is_valid_recipient(bank_account))){
+  if(!(is_valid_recipient(bank_account, Accounts))){
     return;
   }
 
@@ -375,6 +388,7 @@ void transfer(json& account_flag){
 
             if (money <= current_balance){
               Accounts[item.key()][val.key()] = current_balance - money;
+              break;
             }else{
               std::cout << "\n\n----------\nYou can't transfer, not enough balance!\n----------\n\n";
               return;
@@ -391,20 +405,18 @@ void transfer(json& account_flag){
           if(val.key() == "Balance"){
             long int recipient_current_ballance = Accounts[item.key()][val.key()];
             Accounts[item.key()][val.key()] = recipient_current_ballance + money;
-
-            std::cout << "\n\n----------\nThe transfer done successfully!\n----------\n" << std::endl;
-
-            add_content_to_file("accounts.json", Accounts);
-            break;
           }
         }
       }
     }
+    std::cout << "\n\n----------\nThe transfer done successfully!\n----------\n" << std::endl;
+
+    add_content_to_file("accounts.json", Accounts);
 }
 
 
 
-void top_up_balance(json& account_flag){
+void top_up_balance(json& account_flag, json& Accounts){
   
     long int money = 0;
 
