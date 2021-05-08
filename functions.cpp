@@ -23,7 +23,7 @@ int input_number(std::string number, int a, int b){
   b += 48;
   std::cin >> number;
 
-  while(number.length() != 1 || (!(std::isdigit(number[0]))) || (!(number[0] >= 49 && number[0] <= 55))){
+  while(number.length() != 1 || (!(std::isdigit(number[0]))) || (!(number[0] >= a && number[0] <= b))){
     std::cin.clear();
     std::cout << "\ntry again!" << std::endl;
     std::cin >> number;
@@ -400,6 +400,7 @@ void transfer(json& account_flag, json& Accounts){
       }
     }
 
+  //increasing recipient balance.
     json resipient_flag;
     for (const auto& item : Accounts.items()){
         for (const auto& val : item.value().items()){
