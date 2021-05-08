@@ -28,6 +28,6 @@ void deleting(json& account_flag, json& Accounts);
 
 
 void transfer(json& account_flag, json& Accounts);
-bool is_valid_recipient(long long bank_account, json& Accounts);
+bool is_valid_recipient(long long bank_account, json& Accounts, json& account_flag);
 
 void top_up_balance(json& account_flag, json& Accounts);

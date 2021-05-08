@@ -87,7 +87,7 @@ void adding_new_customer(Customer& customer, json& Accounts){
       {"ID", customer.id},
       {"Login", customer.login},
       {"Password", customer.password},
-      {"Bank account", customer.bank_account},
+      {"Bank_account", customer.bank_account},
       {"Balance", customer.balance}
     };
 
@@ -288,10 +288,10 @@ std::string CUSTOMERS(json& Accounts){
           o2 = "Surname: " + temp2 + "\n";
           }
 
-        if(val.key() == "Bank account"){
+        if(val.key() == "Bank_account"){
           long long int bank_ = val.value();
           std::string temp3 = std::to_string(bank_);
-          o3 = "Bank account: " + temp3 + "\n";
+          o3 = "Bank_account: " + temp3 + "\n";
           }
     }
     output += o1 + o2 + o3;
@@ -315,19 +315,21 @@ void deleting(json& account_flag, json& Accounts){
 }
 
 
-bool is_valid_recipient(long long bank_account, json& Accounts){
+bool is_valid_recipient(long long bank_account, json& Accounts, json& account_flag){
   
   for (const auto& item : Accounts.items()){
-        for (const auto& val : item.value().items()){
-          if(val.key() == "Bank account"){
-            if(val.value() == bank_account){
-              return true;
-            } else{ break; }
-          }
-        }  
+    if (item.value() != account_flag){
+      for (const auto& val : item.value().items()){
+        if(val.key() == "Bank_account"){
+          if(val.value() == bank_account){
+            return true;
+          } else{ break; }
+        }
       }
-      return false;
     }
+  }
+  return false;
+}
       
 
 bool check_money_type(std::string money_str){
@@ -344,18 +346,18 @@ void transfer(json& account_flag, json& Accounts){
 
   std::cout << "\nEnter recipient bank account (number)!\n----------\n\n";
 
-  std::cout << "\nBank account: ";
-  long long bank_account;
-  std::cin >> bank_account;
+  std::cout << "\nBank_account: ";
+  long long _bank_account;
+  std::cin >> _bank_account;
 
   if (std::cin.fail()) {
     std::cin.clear();
     return;
-}
+  }
   
   long int money = 0;
 
-  if(!(is_valid_recipient(bank_account, Accounts))){
+  if(!(is_valid_recipient(_bank_account, Accounts, account_flag))){
     return;
   }
 
@@ -398,20 +400,29 @@ void transfer(json& account_flag, json& Accounts){
       }
     }
 
-    // increasing recipient's balance
+    json resipient_flag;
     for (const auto& item : Accounts.items()){
-      if(item.value() == account_flag){
+        for (const auto& val : item.value().items()){
+          if(val.key() == "Bank_account"){
+            if(Accounts[item.key()][val.key()] == _bank_account){
+              resipient_flag = item.value();
+            }
+          }
+        }
+    }
+
+    for (const auto& item : Accounts.items()){
+      if(item.value() == resipient_flag){
         for (const auto& val : item.value().items()){
           if(val.key() == "Balance"){
             long int recipient_current_ballance = Accounts[item.key()][val.key()];
             Accounts[item.key()][val.key()] = recipient_current_ballance + money;
-          }
+          } 
         }
-      }
     }
-    std::cout << "\n\n----------\nThe transfer done successfully!\n----------\n" << std::endl;
-
-    add_content_to_file("accounts.json", Accounts);
+  }
+  std::cout << "\n\n----------\nThe transfer done successfully!\n----------\n";
+  add_content_to_file("accounts.json", Accounts);
 }
 
 
