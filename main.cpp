@@ -1,171 +1,145 @@
-#include "declarations.h"
+#include "include.h"
 #include "customer.h"
-#include "json.hpp"
-
-using json = nlohmann::json;
-
-json Accounts;
-json temp;
+#include "functions.h"
 
 
-void adding_new_json_object(Customer& customer, json& Accounts);
-
-void update(json& Accounts, std::string& login, std::string& password, std::string& id);
-
-void deleting(json& Accounts, json& temp, std::string& login, std::string& password, std::string& id);
-
-
-void print_account(json& Accounts, std::string& login, std::string& password, std::string& id);
-
-void print_all_customers(json& Accounts);
-
-std::string CUSTOMERS(json& Accounts);
 
 int main() {
 
-  bool exists = false;
+  // put "temp.json" into Accounts and remove.
   std::ifstream tempfile;
   tempfile.open("temp.json");
 
   if (tempfile.is_open()) {
-    std::cout << std::endl;
     std::cout << "Welcome back!...\n\n";
-    exists = true;
     tempfile.close();
-    }
-  else {
-    std::cout << "\nThere is no old data! Brand new system!...\n\n";
-    }
 
-  if(exists){
     std::ifstream temp_file("temp.json", std::ifstream::binary);
     temp_file >> temp;
 
     Accounts = temp;
-
     remove("temp.json");
-  }
+    }
 
+  else {
+    std::cout << "\nThere is no old data! Brand new system!...\n\n";
+    }
+
+
+  // Starting program.
   while(1){
+    welcome();
     int choise = choose();
 
+    // 1.Creating new customer.
     if(choise == 1){
-      std::cout << "\nCreating a new account!\n";
+      std::cout << "\n\nCreating a new account!\n\n";
       std::string n, sn, login, password, id;
       
-      print(n, sn, id, login, password);
+      input_credentials(n, sn, id, login, password);
       Customer customer(n, sn, id, login, password);
 
-      adding_new_json_object(customer, Accounts);
-
-      
-
-      std::fstream myfile;
-      myfile.open("accounts.json", std::ios::out);
-
-      if (myfile.is_open()) {
-        myfile << std::setw(4) << Accounts << std::endl;
-        myfile.close();
-        }
-      else {
-        std::cout << "Unable to open file";
-        }
+      adding_new_customer(customer, Accounts);
+      add_content_to_file("accounts.json", Accounts);
 
     }
 
-    else if (choise == 2){
+    // 2.Updating customer information.
+    else if(choise == 2){
       std::cout << "\nUpdate account!\n";
-      std::cout << "Please enter your login, password and ID - for updateing account!...\n";
-
+      std::cout << "Please enter your login, password and ID - for updating account!...\n";
       std::string login, password, id;
-      
-      std::cout << "\nLogin: ";
-      std::cin >> login;
 
-      std::cout << "Password: ";
-      std::cin >> password;
+      bool is_valid_user = input_sign_in_credentials(login, password, id, account_flag);
 
-      std::cout << "\nID: ";
-      std::cin >> id;
-      std::cout << std::endl;
-
-      update(Accounts, login, password, id);
+      if(is_valid_user){
+        update(account_flag);
+      } else{
+        std::cout << "\n\n----------\nIncorrect login, password or id\n----------\n\n";
+      }
     }
 
-    else if (choise == 4){
+    // 3.transactions
+    else if (choise == 3){
+      std::cout << "\nNew transaction!\n";
+      std::cout << "Please enter your login, password and ID - for transaction!...\n";
+      std::string login, password, id;
 
+      bool is_valid_user = input_sign_in_credentials(login, password, id, account_flag);
+
+      if(is_valid_user){
+        std::cout << "\n\n-----\nChoose transaction number\n-----\n\n1.Transfer from your account!.\n2.Top up the balance in cash\n-----\n\n";
+        
+        std::string direction_str;
+        int direction = input_number(direction_str, 1, 2);
+        std::cout << "\n\n----------\nNew transaction!\n----------\n\n";
+          
+        if(direction == 1){
+          transfer(account_flag);
+        } else if(direction == 2){
+          top_up_balance(account_flag);
+        }
+      } else{
+        std::cout << "\n\n----------\nIncorrect login, password or id\n----------\n\n";
+      }
+    }
+
+    // 4.Checking customer details.
+    else if (choise == 4){
       std::cout << "\nChecking account details!\n";
       std::cout << "Please enter your login, password and ID!...\n";
-
       std::string login, password, id;
       
-      std::cout << "\nLogin: ";
-      std::cin >> login;
+      bool is_valid_user = input_sign_in_credentials(login, password, id, account_flag);
 
-      std::cout << "Password: ";
-      std::cin >> password;
-
-      std::cout << "\nID: ";
-      std::cin >> id;
-
-      print_account(Accounts, login, password, id);
+      if(is_valid_user){
+        print(account_flag);
+      } else{
+        std::cout << "\n\n----------\nIncorrect login, password or id\n----------\n\n";
+      }
     }
 
+    // 5.deleting account
     else if (choise == 5){
       std::cout << "\nDelete account!\n";
       std::cout << "Please enter your login, password and ID - for deleting account!...\n";
-
       std::string login, password, id;
-      
-      std::cout << "\nLogin: ";
-      std::cin >> login;
 
-      std::cout << "Password: ";
-      std::cin >> password;
+      bool is_valid_user = input_sign_in_credentials(login, password, id, account_flag);
 
-      std::cout << "\nID: ";
-      std::cin >> id;
-      std::cout << std::endl;
-
-      deleting(Accounts, temp, login, password, id);
+      if(is_valid_user){
+        deleting(account_flag);
+      } else{
+        std::cout << "\n\n----------\nIncorrect login, password or id\n----------\n\n";
+      }
     }
 
+    // 6.Print customers list.
     else if (choise == 6){
-      std::cout << std::endl;
-      std::cout << "\n----------\n";
+      std::cout << "\n\n-----\nPrinting all Customers information!\n-----\n\n";
 
-      print_all_customers(Accounts);
+      print_all_customers();
 
-      std::string customers_list = CUSTOMERS(Accounts);
+      // add all customers list in -> customers_list.txt
+      std::string customers_list = CUSTOMERS();
+      std::ofstream customers_list_file("customers_list.txt");
 
-      std::ofstream add_all_customers_in_file("customers_list.txt");
-
-      if (add_all_customers_in_file.is_open()) {
-        add_all_customers_in_file << customers_list << std::endl;
-        add_all_customers_in_file.close();
+      if (customers_list_file.is_open()) {
+        customers_list_file << customers_list << std::endl;
+        customers_list_file.close();
         }
       else {
         std::cout << "Unable to open file";
-        }
-             
+        }     
     }
 
+    // 7.Exit the program.
     else if(choise == 7){
+      std::cout << "\n\n-----\nExit from bank system!\n-----\n\n";
+
       temp = Accounts;
-
-      std::fstream tempfile;
-      tempfile.open("temp.json", std::ios::out);
-
-      if (tempfile.is_open()) {
-        tempfile << std::setw(4) << temp << std::endl;
-        tempfile.close();
-        // remove("accounts.json");
-        }
-      else {
-        std::cout << "Unable to open file";
-        }
-    
-      break; }
-
+      add_content_to_file("temp.json", temp);    
+      break;
+      }
   }
 }

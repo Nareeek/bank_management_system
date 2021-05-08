@@ -1,20 +1,28 @@
-#include "declarations.h"
+#include "include.h"
 #include "customer.h"
-#include "json.hpp"
-
-using json = nlohmann::json;
+#include "functions.h"
 
 
-int choose()
-{
-  std::string welcome = "\nCUSTOMER ACCOUNT BANKING MANAGEMENT SYSTEM\n\n---- WELCOME TO THE MAIN MANU ----\n\n1. Create new account\n2. Update information of existing account\n3. For transactions\n4. Check the details of existing account\n5. Removing the existing account\n6. View customer's list\n7. Exit\n\n\nEnter your choice: ";
 
-  std::cout << welcome;
 
+
+void welcome(){
+  std::cout << "\nCUSTOMER ACCOUNT BANKING MANAGEMENT SYSTEM\n\n---- WELCOME TO THE MAIN MANU ----\n\n1. Create new account\n2. Update information of existing account\n3. For transactions\n4. Check the details of existing account\n5. Removing the existing account\n6. View customer's list\n7. Exit\n\n\nEnter your choice: ";
+}
+
+
+int choose(){
   std::string number;
-  std::cin >> number;
 
-  while(number.length() != 1 || (!(std::isdigit(number[0]))) || (!(number[0] > 48 && number[0] < 56))){
+  int num = input_number(number, 1, 7);
+  return num;
+}
+
+
+int input_number(std::string number, int a, int b){
+  a += 48;
+  b += 48;
+  while(number.length() != 1 || (!(std::isdigit(number[0]))) || (!(number[0] >= 49 && number[0] <= 55))){
     std::cin.clear();
     std::cout << "\ntry again!" << std::endl;
     std::cin >> number;
@@ -22,19 +30,11 @@ int choose()
   
   int n = number[0] - 48;
   return n;
+
 }
 
 
-long long int generate_number() {
-    std::random_device rd;
-    std::mt19937 mt(rd());
-    std::uniform_real_distribution<double> dist(100000000000, 999999999999);
-
-    long long int number = dist(mt);
-    return number;
-}
-
-void print(std::string& name, std::string& surname, std::string &id, std::string& login, std::string& password){
+void input_credentials(std::string& name, std::string& surname, std::string &id, std::string& login, std::string& password){
   
   std::cout << "\nName: ";
   std::cin >> name;
@@ -54,12 +54,22 @@ void print(std::string& name, std::string& surname, std::string &id, std::string
 
 }
 
-void adding_new_json_object(Customer& customer, json& Accounts){
 
-    for (const auto& item : Accounts.items())
-    {
-        for (const auto& val : item.value().items())
-        {
+long long int generate_number() {
+    std::random_device rd;
+    std::mt19937 mt(rd());
+    std::uniform_real_distribution<double> dist(100000000000, 999999999999);
+
+    long long int number = dist(mt);
+    return number;
+}
+
+
+void adding_new_customer(Customer& customer, json& Accounts){
+
+    // checking for valid(non repetitive) customer id
+    for (const auto& item : Accounts.items()){
+        for (const auto& val : item.value().items()){
           if(val.key() == "ID"){
             if(val.value() == customer.id){
               std::cout << "\n\n-------------\nThe ID-value is matching, wrong!\nAccount didn't created!\n---------------\n\n";
@@ -80,415 +90,358 @@ void adding_new_json_object(Customer& customer, json& Accounts){
       {"Balance", customer.balance}
     };
 
-    
-      std::cout << std::endl;
-      std::cout << "\n----------------------\n";
-      std::cout << "The new accout was created!\n";
-      std::cout << "-----------------\n\n";
+  std::cout << "\n----------------------\nThe new accout was created!\n-----------------\n\n";
 }
 
 
-void update(json& Accounts, std::string& login, std::string& password, std::string& id){
+void add_content_to_file(std::string filename, json& Accounts){
+    std::fstream myfile;
+    myfile.open(filename, std::ios::out);
+
+    if (myfile.is_open()) {
+      myfile << std::setw(4) << Accounts << std::endl;
+      myfile.close();
+      }
+    else {
+      std::cout << "Unable to open file";
+      }
+}
+
+bool input_sign_in_credentials(std::string& login, std::string& password, std::string& id, json& account_flag){
+    std::cout << "\nLogin: ";
+    std::cin >> login;
+
+    std::cout << "Password: ";
+    std::cin >> password;
+
+    std::cout << "\nID: ";
+    std::cin >> id;
+    std::cout << std::endl;
+
     bool flag1 = false;
     bool flag2 = false;
     bool flag3 = false;
-
-    bool name_changed = false;
-    bool surname_changed = false;
-    bool id_changed = false;
-    bool login_changed = false;
-    bool password_changed = false;
-    bool exit = false;
-
-    bool is_changed = false;
-    json banking_account_flag;
-
-    std::string _n, sn, _id, l, p, my_id;
-
-
-    for (const auto& item : Accounts.items())
-    {
-        for (const auto& val : item.value().items())
-        {
-          if(val.key() == "Login"){
-            if(val.value() == login){
-              flag1 = true;
-            } else{
-                break;
+    for (const auto& item : Accounts.items()){
+      for (const auto& val : item.value().items()){
+        if(val.key() == "Login"){
+          if(val.value() == login){
+            flag1 = true;
+            }else{
+              break;
+              }
             }
-          }
-
-          if(val.key() == "Password"){
-            if(val.value() == password){
-              flag2 = true;
-            } else{
-                break;
+        
+        if(val.key() == "Password"){
+          if(val.value() == password){
+            flag2 = true;
+            }else{
+              break;
+              }
             }
-          }
 
         if(val.key() == "ID"){
-            if(val.value() == id){
-              my_id = val.value();
-              flag3 = true;
-            } else{
-                break;
-            }
-          }
-        }
-          
-        if(flag1 && flag2){
-          if(flag3){
-            banking_account_flag = item.value();
-            is_changed = true;
-
-            std::cout << "\n\n----------\nStart typing new information!\n----------\n\n";
-
-            while(!(exit)){
-              std::cout << "\n----------\nChoose what you want to change!\n----------\n1.Name\n2.Surname\n3.ID\n4.Login\n5.Password\n6.Exit\n----------\n";
-              std::string number;
-              std::cin >> number;
-
-              while(number.length() != 1 || (!(std::isdigit(number[0]))) || (!(number[0] > 48 && number[0] < 56))){
-                std::cin.clear();
-                std::cout << "\ntry again!" << std::endl;
-                std::cin >> number;
+          if(val.value() == id){
+            flag3 = true;
+            }else{
+              break;
               }
+            }
+
+          }
               
-              int n = number[0] - 48;
-
-              if(n == 1){
-                std::cout << "\nName: ";
-                std::cin >> _n;
-                name_changed = true;
-              }
-
-              if(n == 2){
-                std::cout << "\nSurname: ";
-                std::cin >> sn;
-                surname_changed = true;
-              }
-
-              if(n == 3){
-                std::cout << "\nID: ";
-                std::cin >> _id;
-                id_changed = true;
-              }
-
-              if(n == 4){
-                std::cout << "\nLogin: ";
-                std::cin >> l;
-                login_changed = true;
-              }
-
-              if(n == 5){
-                std::cout << "\nPassword: ";
-                std::cin >> p;
-                password_changed = true;
-              }
-
-              if(n == 6){
-                exit = true;
-              }
-            }
-          }
-        } else{
-           flag1 = false;
-           flag2 = false;
-           flag3 = false;
-      }
-    }
-    
-    for (const auto& item : Accounts.items())
-    {
-        for (const auto& val : item.value().items())
-        {
-          if(val.key() == "ID"){
-            if(val.value() == _id && val.value() != my_id){
-              std::cout << "\n\n-------------\nThe ID-value is matching, wrong!\nAccount didn't updated!\n---------------\n\n";
-              return;
-            }
-          }   
-        }
-      }
-
-
-    if(is_changed){
-      for (const auto& item : Accounts.items()){
-        if(item.value() == banking_account_flag){
-          for (const auto& val : item.value().items()){
-
-              if(val.key() == "Name" && name_changed){
-                Accounts[item.key()][val.key()] = _n;
-              }
-
-              if(val.key() == "Surname" && surname_changed){
-                Accounts[item.key()][val.key()] = sn;
-              }
-
-              if(val.key() == "ID" && id_changed){
-                Accounts[item.key()][val.key()] = _id;
-              }
-
-              if(val.key() == "Login" && login_changed){
-                Accounts[item.key()][val.key()] = l;
-              }
-
-              if(val.key() == "Password" && password_changed){
-                Accounts[item.key()][val.key()] = p;
-              }           
-            }
-              std::fstream myfile;
-              myfile.open("accounts.json", std::ios::out);
-
-              if (myfile.is_open()) {
-                myfile << std::setw(4) << Accounts << std::endl;
-                myfile.close();
-                }
-              else {
-                std::cout << "Unable to open file";
-                }
-
-              std::cout << "\n\nThe account successfully updated!\n\n";
-
-              break;
-        }
-      }
-    } else {
-        std::cout << std::endl;
-        std::cout << "Incorrect login or password\n";
-    }
-}
-
-
-void print_account(json& Accounts, std::string& login, std::string& password, std::string& id){
-    bool flag1 = false;
-    bool flag2 = false;
-    bool flag3 = false;
-
-    for (const auto& item : Accounts.items())
-    {
-        for (const auto& val : item.value().items())
-        {
-          if(val.key() == "Login"){
-            if(val.value() == login){
-              flag1 = true;
-            }
-            else {
-              break;
-            }
-          }
-
-          if(val.key() == "Password"){
-            if(val.value() == password){
-              flag2 = true;
-            }
-            else{
-              break;
-            }
-          }
-
-          if(val.key() == "ID"){
-            if(val.value() == id){
-              flag3 = true;
-            }
-            else{
-              break;
-            }
-          }
-        }
-          
         if(flag1 && flag2){
           if(flag3){
-            std::cout << "\n\n-------\n";
-            for (const auto& val : item.value().items()){
-              if(val.key() == "Name"){
-                std::cout << "Name: " << val.value() << std::endl;
-              }
-
-              if(val.key() == "Surname"){
-                std::cout << "Surname: " << val.value() << std::endl;
-                }
-
-              if(val.key() == "ID"){
-                std::cout << "ID: " << val.value() << std::endl;
-                }
-
-              if(val.key() == "Bank account"){
-                std::cout << "Bank account: " << val.value() << std::endl;
-                }
-
-              if(val.key() == "Balance"){
-                std::cout << "Balance: " << val.value() << " $" << std::endl;
-                }
-
-            }
-            std::cout << "\n----------\n\n";
-            return;
+            account_flag = item.value();
+            return true;
           }
         }
-        else {
-          flag1 = false;
-          flag2 = false;
-          flag3 = false;
-        }
     }
-    std::cout << std::endl;
-    std::cout << "-----------------\nWrong login or password!\n-----------------";
-    std::cout << std::endl;
-    std::cout << std::endl;
+    return false;
+}
+
+
+void input_update_credentials(int choise, std::string& new_name, std::string& new_surname, std::string& new_id, std::string& new_login, std::string& new_password){
+  
+
+  switch(choise) {
+    case 1:
+      std::cout << "\nNew Name: ";
+      std::cin >> new_name;
+        break;
+    case 2:
+      std::cout << "\nNew Surname: ";
+      std::cin >> new_surname;
+        break;
+    case 3:
+      std::cout << "\nNew ID: ";
+      std::cin >> new_id;
+        break;
+    case 4:
+      std::cout << "\nNew Login: ";
+      std::cin >> new_login;
+        break;
+    case 5:
+      std::cout << "\nNew Password: ";
+      std::cin >> new_password;
+        break;
+    default:
+        break;
+    }
 
 }
 
 
-void print_all_customers(json& Accounts){
-
-    for (const auto& item : Accounts.items())
-    {
-        for (const auto& val : item.value().items())
-        {
-            
-          if(val.key() == "Name"){
+void update(json& account_flag){
+  std::string new_name="", new_surname="", new_id="", new_login="", new_password="";
 
 
-              std::cout << "Name: " << val.value() << std::endl;
-            }
+  // choose and enter the modified information.
+  std::cout << "\n-----\nChoose what you want to change!\n-----\n1.Name\n2.Surname\n3.ID\n4.Login\n5.Password\n6.Exit\n-----\n";
 
-            if(val.key() == "Surname"){
+  std::string number;
+  int choise = input_number(number, 1, 6);
+  
+  while(choise != 6){
+    input_update_credentials(choise, new_name, new_surname, new_id, new_login, new_password);
+    std::cout << "\n\n-----\nWhat else?\n-----\n";
+  }
+  
 
-              std::cout << "Surname: " << val.value() << std::endl;
-              }
+  // updating information
+  for (const auto& item : Accounts.items()){
+    if(item.value() == account_flag){
+      for (const auto& val : item.value().items()){
 
-            if(val.key() == "Bank account"){
+          if(val.key() == "Name" && (new_name != "")){
+            Accounts[item.key()][val.key()] = new_name;
+          }
 
-              std::cout << "Bank account: " << val.value() << std::endl;
-              }
+          if(val.key() == "Surname" && (new_surname != "")){
+            Accounts[item.key()][val.key()] = new_surname;
+          }
+
+          if(val.key() == "ID" && (new_id != "")){
+            Accounts[item.key()][val.key()] = new_id;
+          }
+
+          if(val.key() == "Login" && (new_login != "")){
+            Accounts[item.key()][val.key()] = new_login;
+          }
+
+          if(val.key() == "Password" && (new_password != "")){
+            Accounts[item.key()][val.key()] = new_password;
+          }           
         }
 
-        std::cout << "\n\n----------\n\n";
-    }
+        add_content_to_file("accounts.json", Accounts);
 
-    std::cout << "\n\n----------\n";
-    std::cout << "You can check all customers list informations from new created customers_list.txt file!...";
-    std::cout << "\n----------\n\n";
+        std::cout << "\n-----\nThe account successfully updated!\n-----\n";
+        return;
+    }
+  }
 }
 
 
-std::string CUSTOMERS(json& Accounts){
+void print(json& account_flag){
+  
+  for (const auto& item : Accounts.items()){
+    if(item.value() == account_flag){
+      for (const auto& val : item.value().items()){
+        std::cout << val.key() << ": " << val.value() << std::endl;
+      }
+    }
+  }
+}
+
+
+void print_all_customers(){
+  for (const auto& item : Accounts.items()){
+      for (const auto& val : item.value().items()){
+        std::cout << val.key() << ": " << val.value() << std::endl;
+      }
+      std::cout << "\n\n-----\n" << item.key() << "\n-----\n\n";
+    }
+}
+
+std::string CUSTOMERS(){
   std::string output, o1, o2, o3;
 
-    for (const auto& item : Accounts.items())
-    {
-      output += "\n----------\n\n";
-        for (const auto& val : item.value().items())
-        {
-            
-          if(val.key() == "Name"){
-            std::string temp1 = val.value();
-            o1 = "Name: " + temp1 + "\n";
-            }
-
-            if(val.key() == "Surname"){
-              std::string temp2 = val.value();
-              o2 = "Surname: " + temp2 + "\n";
-
-              }
-
-            if(val.key() == "Bank account"){
-              long long int bank_ = val.value();
-              std::string temp3 = std::to_string(bank_);
-              o3 = "Bank account: " + temp3 + "\n";
-
-              }
-        }
-        output += o1 + o2 + o3;
-        o1 = "";
-        o2 = "";
-        o3 = "";
+  for (const auto& item : Accounts.items()){
+    output += "\n-----\n\n";
+    for (const auto& val : item.value().items()){
         
+      if(val.key() == "Name"){
+        std::string temp1 = val.value();
+        o1 = "Name: " + temp1 + "\n";
+        }
+
+        if(val.key() == "Surname"){
+          std::string temp2 = val.value();
+          o2 = "Surname: " + temp2 + "\n";
+          }
+
+        if(val.key() == "Bank account"){
+          long long int bank_ = val.value();
+          std::string temp3 = std::to_string(bank_);
+          o3 = "Bank account: " + temp3 + "\n";
+          }
     }
-    return output;
+    output += o1 + o2 + o3;
+    o1 = ""; o2 = ""; o3 = ""; 
+  }
+  return output;
 }
 
 
-void deleting(json& Accounts, json& temp,std::string& login, std::string& password, std::string& id){
-    bool flag1 = false;
-    bool flag2 = false;
-    bool flag3 = false;
-    bool is_changed = false;
-    json banking_account_flag;
+void deleting(json& account_flag){
+
+    for (const auto& item : Accounts.items()){
+      if(item.value() == account_flag){
+          Accounts.erase(item.key());
+          std::cout << "\n\nThe account successfully deleted!\n\n";
+
+          add_content_to_file("accounts.json", Accounts);
+          return;
+      }
+    }
+}
 
 
-    for (const auto& item : Accounts.items())
-    {
-        for (const auto& val : item.value().items())
-        {
-          if(val.key() == "Login"){
-            if(val.value() == login){
-              flag1 = true;
-            } else{
-                break;
-            }
+bool is_valid_recipient(long long bank_account){
+  
+  for (const auto& item : Accounts.items()){
+        for (const auto& val : item.value().items()){
+          if(val.key() == "Bank account"){
+            if(val.value() == bank_account){
+              return true;
+            } else{ break; }
+          }
+        }  
+      }
+      return false;
+    }
+      
+
+bool check_money_type(std::string money_str){
+  for(int i = 0; i < money_str.size(); i++){
+    if (!(std::isdigit(money_str[i]))){
+      return false;
+    }
+  }
+  return true;
+}
+
+
+void transfer(json& account_flag){
+
+  std::cout << "\n\n----------\nEnter recipient bank account (number)!\n----------\n\n";
+
+  std::cout << "\nBank account: ";
+  long long bank_account;
+  std::cin >> bank_account;
+  
+  long int money = 0;
+
+  if(!(is_valid_recipient(bank_account))){
+    return;
+  }
+
+  // decreasing your balance.
+  for (const auto& item : Accounts.items()){
+    if(item.value() == account_flag){
+      for (const auto& val : item.value().items()){
+        if(val.key() == "Balance"){
+          std::cout << "\n\n-----\nNow you have " << val.value() << "$ in your balance\n-----\n";
+          std::cout << "How much you want to transfer from your account?\n----------\n\n";
+
+          std::string money_str;
+          std::cin >> money_str;
+
+          bool is_valid_money = check_money_type(money_str);
+
+          // change string(money) -> int(money)
+          while(!(is_valid_money)){
+            std::cout << "\n\n-----\nNot a valid money type, try again!\n-----\n\n";
+
+            std::cin.clear();
+            std::cin >> money_str;
+            is_valid_money = check_money_type(money_str);
           }
 
-          if(val.key() == "Password"){
-            if(val.value() == password){
-              flag2 = true;
-            } else{
-                break;
-            }
-          }
+            std::stringstream geek(money_str);
+            geek >> money; 
 
-          if(val.key() == "ID"){
-            if(val.value() == id){
-              flag3 = true;
-            } else{
-                break;
+            long int current_balance = Accounts[item.key()][val.key()];
+
+            if (money <= current_balance){
+              Accounts[item.key()][val.key()] = current_balance - money;
+            }else{
+              std::cout << "\n\n----------\nYou can't transfer, not enough balance!\n----------\n\n";
+              return;
             }
           }
         }
-          
-        if(flag1 && flag2){
-          if(flag3){
-            banking_account_flag = item.value();
-            is_changed = true;
+      }
+    }
+
+    // increasing recipient's balance
+    for (const auto& item : Accounts.items()){
+      if(item.value() == account_flag){
+        for (const auto& val : item.value().items()){
+          if(val.key() == "Balance"){
+            long int recipient_current_ballance = Accounts[item.key()][val.key()];
+            Accounts[item.key()][val.key()] = recipient_current_ballance + money;
+
+            std::cout << "\n\n----------\nThe transfer done successfully!\n----------\n" << std::endl;
+
+            add_content_to_file("accounts.json", Accounts);
             break;
           }
-
-        } else{
-           flag1 = false;
-           flag2 = false;
-           flag3 = false;
-      }
-    }
-
-
-    if(is_changed){
-      for (const auto& item : Accounts.items()){
-        if(item.value() == banking_account_flag){
-
-            Accounts.erase(item.key());
-            std::cout << "\n\nThe account successfully deleted!\n\n";
-
-
-            std::fstream myfile;
-            myfile.open("accounts.json", std::ios::out);
-
-            if (myfile.is_open()) {
-              myfile << std::setw(4) << Accounts << std::endl;
-              myfile.close();
-              }
-            else {
-              std::cout << "Unable to open file";
-              }
-
-            std::cout << "\n\nThe account successfully deleted!\n\n";
-
-            return;
         }
       }
-    } else {
-        std::cout << std::endl;
-        std::cout << "Incorrect login or password\n";
+    }
+}
+
+
+
+void top_up_balance(json& account_flag){
+  
+    long int money = 0;
+
+      for (const auto& item : Accounts.items()){
+        if(item.value() == account_flag){
+          for (const auto& val : item.value().items()){
+            if(val.key() == "Balance"){
+              std::cout << "Now you have " << val.value() << "$ in your balance \n\n";
+
+              std::cout << "\n\n----------\nhow much do you want to add cash to your account?\n----------\n\n";
+
+              std::string money_str;
+              std::cin >> money_str;
+
+              bool is_valid_money = check_money_type(money_str);
+
+              // change string(money) -> int(money)
+              while(!(is_valid_money)){
+                std::cout << "\n\n-----\nNot a valid money type, try again!\n-----\n\n";
+
+                std::cin.clear();
+                std::cin >> money_str;
+                is_valid_money = check_money_type(money_str);
+              }
+
+              std::stringstream geek(money_str);
+              geek >> money; 
+
+              long int current_balance = Accounts[item.key()][val.key()];
+
+              Accounts[item.key()][val.key()] = current_balance + money;
+
+              add_content_to_file("accounts.json", Accounts);
+              std::cout << "\n\n----------\nY've successfully top-up your bank account!\n----------\n\n";
+            }
+          }
+        }
+      }
     }
 
-}
