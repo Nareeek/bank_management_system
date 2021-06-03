@@ -8,15 +8,6 @@
         "Password": "e",
         "Surname": "e"
     },
-    "332485101964": {
-        "Balance": 150,
-        "Bank_account": 622017122674,
-        "ID": "c",
-        "Login": "c",
-        "Name": "c",
-        "Password": "c",
-        "Surname": "c"
-    },
     "734842894440": {
         "Balance": 590,
         "Bank_account": 633038314523,
@@ -25,5 +16,14 @@
         "Name": "b",
         "Password": "b",
         "Surname": "b"
+    },
+    "912925524011": {
+        "Balance": 0,
+        "Bank_account": 558420027380,
+        "ID": "a",
+        "Login": "a",
+        "Name": "a",
+        "Password": "a",
+        "Surname": "a"
     }
 }
